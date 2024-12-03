@@ -29,11 +29,17 @@ export default function Home() {
         password
       }
 
-      const response = await axios.post(`${config.apiUrl}/api/user/signin`, payload)
+      const response = await axios.post(`${config.apiUrl}/api/user/sign-in`, payload)
 
       if (response.data.token !== undefined) {
         localStorage.setItem(config.tokenKey, response.data.token)
-        router.push('/dashboard')
+        router.push('/backoffice/dashboard')
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'error',
+          text: 'Invalid username or password'
+        })
       }
 
     } catch (error: any) {
@@ -65,7 +71,7 @@ export default function Home() {
             <i className="fa fa-lock mr-2"></i>
             <span>Password</span>
           </div>
-          <input type="text" className="form-control" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <input type="password" className="form-control" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
 
           <button type="submit" className="btn mt-5 text-xl">
             <i className="fa fa-sign-in mr-2"></i>

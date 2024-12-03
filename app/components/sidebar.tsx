@@ -1,0 +1,38 @@
+import React from 'react'
+import Link from 'next/link'
+
+function SideBar() {
+    const menuItems = [
+        { title: 'Dashboard', href: '/dashboard', icon: 'fa-solid fa-chart-simple' },
+        { title: 'พนักงานร้าน', href: '/dashboard/user', icon: 'fa-solid fa-users' },
+        { title: 'บันทึกการซ่อม', href: '/dashboard/repair-record', icon: 'fa-solid fa-screwdriver' },
+        { title: 'สถานะการซ่อม', href: '/dashboard/repair-status', icon: 'fa-solid fa-gear' },
+        { title: 'สถิติการซ่อมของช่าง', href: '/dashboard/mecthanic-report', icon: 'fa-solid fa-right-from-bracket' },
+        { title: 'รายงานรายได้', href: '/dashboard/income-report', icon: 'fa-solid fa-money-bill' },
+        { title: 'ทะเบียนวัสดุ อุปกรร์', href: '/dashboard/devices', icon: 'fa-solid fa-box' },
+        { title: 'ข้อมูลร้าน', href: '/dashboard/company', icon: 'fa-solid fa-shop' },
+    ]
+
+    return (
+        <aside className='sidebar'>
+            <div className='sidebar-header'>
+                <i className='da-solid  da-user text-4xl mr-5'></i>
+                <h1 className='text-xl font-bold'>Bun Service 2025</h1>
+            </div>
+            <nav className='sidebar-nav bg-gray-950 p-4 rounded-tl-3xl ml-4'>
+                <ul>
+                    {menuItems.map((item) => (
+                        <li key={item.href}>
+                            <Link href={item.href} className='sidebar-item'>
+                                <i className={item.icon + 'mr-2 w-6'}></i>
+                                {item.title}
+                            </Link>
+                        </li>
+                    ))}
+                </ul>
+            </nav>
+        </aside>
+    )
+}
+
+export default SideBar
