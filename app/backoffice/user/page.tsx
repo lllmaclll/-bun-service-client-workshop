@@ -61,7 +61,7 @@ function UserPage() {
                 username: username,
                 password: password,
                 level: level,
-                sectionId: sectionId
+                sectionId: parseInt(sectionId + "")
             }
 
             if (id === '') {
@@ -93,6 +93,14 @@ function UserPage() {
         setPassword('')
         setConfirmPassword('')
         setLevel(user.level)
+
+        const departmentId = user?.section?.department?.id;
+        setDepartmentId(departmentId);
+        fetchSections(departmentId);
+
+        const sectionId = user?.section?.id;
+        setSectionId(sectionId);
+
         setShowModal(true)
     }
 
@@ -138,6 +146,8 @@ function UserPage() {
                     <tr>
                         <th>Username</th>
                         <th style={{ width: '100px' }}>Level</th>
+                        <th>แผนก</th>
+                        <th>ฝ่าย</th>
                         <th className='text-center' style={{ width: '220px' }}>Action</th>
                     </tr>
                 </thead>
@@ -146,6 +156,8 @@ function UserPage() {
                         <tr key={user.id}>
                             <td>{user.username}</td>
                             <td>{user.level}</td>
+                            <td>{user?.section?.department?.name}</td>
+                            <td>{user?.section?.name}</td>
                             <td className='text-center'>
                                 <button className='btn-edit' onClick={() => handleEdit(user)}>
                                     <i className="fa-solid fa-edit mr-2"></i>
@@ -166,7 +178,11 @@ function UserPage() {
             <div className="flex gap-4">
                 <div className="w-1/2">
                     <div>Department</div>
-                    <select className="form-control w-full" value={departmentId} onChange={(e) => handleChangeDepartment(e.target.value)}>
+                    <select 
+                        className="form-control w-full" 
+                        value={departmentId} 
+                        onChange={(e) => handleChangeDepartment(e.target.value)}
+                    >
                         {departments.map((department: any) => (
                             <option key={department.id} value={department.id}>
                                 {department.name}
@@ -177,7 +193,11 @@ function UserPage() {
 
                 <div className="w-1/2">
                     <div>Section</div>
-                    <select className="form-control w-full" value={sectionId} onChange={(e) => setSectionId(e.target.value)}>
+                    <select 
+                        className="form-control w-full" 
+                        value={sectionId} 
+                        onChange={(e) => setSectionId(e.target.value)}
+                    >
                         {sections.map((section: any) => (
                             <option key={section.id} value={section.id}>
                                 {section.name}
