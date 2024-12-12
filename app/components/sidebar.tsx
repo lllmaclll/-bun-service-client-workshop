@@ -4,12 +4,12 @@ import Link from 'next/link'
 function SideBar() {
     const menuItems = [
         { title: 'Dashboard', href: '/dashboard', icon: 'fa-solid fa-chart-simple' },
-        { title: 'พนักงานร้าน', href: '/dashboard/user', icon: 'fa-solid fa-users' },
+        { title: 'พนักงานร้าน', href: '/backoffice/user', icon: 'fa-solid fa-users' },
         { title: 'บันทึกการซ่อม', href: '/dashboard/repair-record', icon: 'fa-solid fa-screwdriver' },
         { title: 'สถานะการซ่อม', href: '/dashboard/repair-status', icon: 'fa-solid fa-gear' },
         { title: 'สถิติการซ่อมของช่าง', href: '/dashboard/mecthanic-report', icon: 'fa-solid fa-right-from-bracket' },
         { title: 'รายงานรายได้', href: '/dashboard/income-report', icon: 'fa-solid fa-money-bill' },
-        { title: 'ทะเบียนวัสดุ อุปกรร์', href: '/dashboard/devices', icon: 'fa-solid fa-box' },
+        { title: 'ทะเบียนวัสดุ อุปกรร์', href: '/backoffice/device', icon: 'fa-solid fa-box' },
         { title: 'ข้อมูลร้าน', href: '/dashboard/company', icon: 'fa-solid fa-shop' },
     ]
 
