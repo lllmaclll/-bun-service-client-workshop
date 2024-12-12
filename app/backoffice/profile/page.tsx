@@ -38,7 +38,7 @@ function ProfilePage() {
                 'Authorization': `Bearer ${localStorage.getItem(config.tokenKey)}`
             }
 
-            const response = await axios.put(`${config.apiUrl}/api/user/update`, payload, {
+            const response = await axios.put(`${config.apiUrl}/api/user/update-profile`, payload, {
                 headers: headers
             })
 
