@@ -87,16 +87,17 @@ function UserPage() {
         }
     }
 
-    const handleEdit = (user: any) => {
+    const handleEdit = async (user: any) => {
         setId(user.id)
         setUsername(user.username)
         setPassword('')
         setConfirmPassword('')
         setLevel(user.level)
 
-        const departmentId = user?.section?.department?.id;
-        setDepartmentId(departmentId);
-        fetchSections(departmentId);
+        const selectedDepartmentId = user?.section?.department?.id ?? (departments[0] as any).id;
+        setDepartmentId(selectedDepartmentId);
+        
+        await fetchSections(selectedDepartmentId);
 
         const sectionId = user?.section?.id;
         setSectionId(sectionId);
@@ -129,7 +130,16 @@ function UserPage() {
 
     useEffect(() => {
         fetchUsers()
-        fetchDepartments()
+
+        const initializeData = async () => {
+            await fetchDepartments();
+            if (departments.length > 0) {
+                const initialDepartmentId = (departments[0] as any).id;
+                setDepartmentId(initialDepartmentId);
+                await fetchSections(initialDepartmentId);
+            }
+        }
+        initializeData();
     }, [])
 
   return (

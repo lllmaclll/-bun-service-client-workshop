@@ -44,30 +44,30 @@ function DevicePage() {
                 serial: serial,
                 name: name,
                 expireDate: new Date(expireDate),
-                remark: remark
+                remark: remark,
             }
 
             if (id === 0) {
-                await axios.post(config.apiUrl + '/api/device/create', payload)
+                await axios.post(`${config.apiUrl}/api/device/create`, payload);
             } else {
-                await axios.put(config.apiUrl + '/api/device/update/' + id, payload)
+                await axios.put(`${config.apiUrl}/api/device/update/${id}`, payload);
             }
 
-            setShowModal(false)
-            setId(0)
-            setBarcode('')
-            setSerial('')
-            setName('')
-            setExpireDate('')
-            setRemark('')
-    
-            fetchData()
+            setShowModal(false);
+            setBarcode('');
+            setSerial('');
+            setName('');
+            setExpireDate('');
+            setRemark('');
+            setId(0);
+
+            fetchData();
         } catch (error: any) {
             Swal.fire({
                 icon: 'error',
-                title: 'ผิดพลาด',
-                text: error.message
-            })
+                title: 'Error',
+                text: error.message,
+            });
         }
     }
 
@@ -87,7 +87,7 @@ function DevicePage() {
             const button = await config.confirmDialog()
 
             if (button.isConfirmed) {
-                await axios.delete(`${config.apiUrl}/api/device/remove` + id)
+                await axios.delete(`${config.apiUrl}/api/device/remove/${id}`)
                 fetchData()
             }
 
@@ -146,24 +146,28 @@ function DevicePage() {
             </table>
         </div>
 
-        <Modal title='เพิ่มรายการ' isOpen={showModal} onClose={handleCloseModal}>
+        <Modal 
+            title='ทะเบียนวัสดุ อุปกรณ์' 
+            isOpen={showModal}
+            onClose={handleCloseModal}
+        >
             <div>barcode</div>
-            <input type="text" className='form-control' value={barcode} onChange={(e) => setBarcode(e.target.value)} />
+            <input type='text' className='form-control' value={barcode} onChange={(e) => setBarcode(e.target.value)} />
 
             <div className='mt-3'>serial</div>
-            <input type="text" className='form-control' value={serial} onChange={(e) => setSerial(e.target.value)} />
+            <input type='text' className='form-control' value={serial} onChange={(e) => setSerial(e.target.value)} />
 
             <div className='mt-3'>ชื่อวัสดุ อุปกรณ์</div>
-            <input type="text" className='form-control' value={name} onChange={(e) => setName(e.target.value)} />
+            <input type='text' className='form-control' value={name} onChange={(e) => setName(e.target.value)} />
 
-            <div className='mt-3'>วันหมดประกัน</div>
-            <input type="text" className='form-control' value={expireDate} onChange={(e) => setExpireDate(e.target.value)} />
+            <div className='mt-3'>วันที่หมดอายุ</div>
+            <input type='date' className='form-control' value={expireDate} onChange={(e) => setExpireDate(e.target.value)} />
 
             <div className='mt-3'>หมายเหตุ</div>
-            <input type="text" className='form-control' value={remark} onChange={(e) => setRemark(e.target.value)} />
+            <input type='text' className='form-control' value={remark} onChange={(e) => setRemark(e.target.value)} />
 
             <button className='btn btn-primary mt-3' onClick={handleSave}>
-                <i className='fa-solid fa-check mr-2'></i>
+                <i className='fa-solid fa-check mr-3'></i>
                 <span>บันทึก</span>
             </button>
         </Modal>
