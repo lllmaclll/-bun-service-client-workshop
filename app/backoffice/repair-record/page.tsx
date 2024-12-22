@@ -20,10 +20,16 @@ function RepairReacordPage() {
     const [solving, setSolving] = useState('')
     const [deviceId, setDeviceId] = useState('')
     const [expireDate, setExpireDate] = useState('');
+    const [id, setId] = useState(0)
 
     const fetchDevices = async () => {
         const response = await axios.get(`${config.apiUrl}/api/device/list`);
         setDevices(response.data);
+    }
+
+    const fetchRepairRecords = async () => {
+        const response = await axios.get(`${config.apiUrl}/api/repair-record/list`)
+        setRepairRecords(response.data)
     }
 
     const handleDeviceChange = (deviceId: string) => {
@@ -52,7 +58,7 @@ function RepairReacordPage() {
             deviceName: deviceName,
             deviceBarcode: deviceBarcode,
             deviceSerial: deviceSerial,
-            expireDate: expireDate == '' ? undefined : expireDate,
+            expireDate: expireDate == '' ? undefined : new Date(expireDate),
             problem: problem,
             solving: solving
         }
@@ -66,6 +72,7 @@ function RepairReacordPage() {
             });
 
             handleCloseModal();
+            fetchRepairRecords()
         } catch (error: any) {
             Swal.fire({
                 icon: 'error',
@@ -75,20 +82,58 @@ function RepairReacordPage() {
         }
     }
 
+    const handleEdit = async (repairRecord: any) => {
+        setCustomerName(repairRecord.customerName)
+        setCustomerPhone(repairRecord.customerPhone)
+
+        if (repairRecord.deviceId) {
+            setDeviceId(repairRecord.deviceId)
+        }
+
+        setDeviceName(repairRecord.deviceName)
+        setDeviceBarcode(repairRecord.deviceBarcode)
+        setDeviceSerial(repairRecord.deviceSerial)
+        setExpireDate(dayjs(repairRecord.expireDate).format('YYYY-MM-DD'))
+        setProblem(repairRecord.problem)
+
+        handleShowModal()
+    }
+
     const handleShowModal = () => {
         setShowModal(true)
     }
 
     const handleCloseModal = () => {
         setShowModal(false)
+        setId(0)
+    }
+
+    const getStatusName = (status: string) => {
+        switch (status) {
+            case 'active':
+                return 'รอซ่อม';
+            case 'pending':
+                return 'รอลูกค้ายืนยัน';
+            case 'repairing':
+                return 'กำลังซ่อม';
+            case 'done':
+                return 'ซ่อมเสร็จ';
+            case 'cancel':
+                return 'ยกเลิก';
+            case 'complete':
+                return 'ลูกค้ามารับอุปกรณ์';
+            default:
+                return 'รอซ่อม';
+        }
     }
 
     useEffect(() => {
         fetchDevices();
+        fetchRepairRecords()
     }, []);
 
     return (
-        <div>
+        <>
             <div className="card">
                 <h1>บันทึกการซ่อม</h1>
                 <div className="card-body">
@@ -96,6 +141,41 @@ function RepairReacordPage() {
                         <i className="fa-solid da-plus mr-3"></i>
                         <span>เพิ่มการซ่อม</span>
                     </button>
+
+                    <table className="table mt-3">
+                        <thead>
+                            <tr>
+                                <th>ชื่อลูกค้า</th>
+                                <th>เบอร์โทรศัพท์</th>
+                                <th>อุปกรณ์</th>
+                                <th>อาการ</th>
+                                <th>วันที่รับซ่อม</th>
+                                <th>วันที่ซ่อมเสร็จ</th>
+                                <th>สถานะ</th>
+                                <th style={{ width: '150px' }}></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {repairRecords.map((repairRecord: any, index: number) => (
+                                <tr key={index}>
+                                    <td>{repairRecord.customerName}</td>
+                                    <td>{repairRecord.customerPhone}</td>
+                                    <td>{repairRecord.deviceName}</td>
+                                    <td>{repairRecord.problem}</td>
+                                    <td>{dayjs(repairRecord.createdAt).format('DD/MM/YYYY')}</td>
+                                    <td>{repairRecord.endJobDate ? dayjs(repairRecord.endJobDate).format('DD/MM/YYYY') : '-'}</td>
+                                    <td>{getStatusName(repairRecord.status)}</td>
+                                    <td>
+                                        <button className='btn-edit' onClick={() => handleEdit(repairRecord)}>
+                                            <i className='fa-solid fa-edit mr-3'></i>
+                                            <span>แก้ไข</span>
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+
                 </div>
             </div>
 
@@ -186,7 +266,7 @@ function RepairReacordPage() {
                     <span>บันทึก</span>
                 </button>
             </Modal>
-        </div>
+        </>
     )
 }
 
