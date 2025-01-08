@@ -80,6 +80,7 @@ function RepairStatusPage() {
         const repairRecord = repairRecords.find((repairRecord: any) => repairRecord.id === id) as any;
 
         if (repairRecord) {
+            setEngineerId(repairRecord?.engineerId ?? 0)
             setId(id);
             setStatus(repairRecord?.status ?? '');
             setSolving(repairRecord?.solving ?? '');
@@ -135,6 +136,7 @@ function RepairStatusPage() {
                     <table className="table mt-3">
                         <thead>
                             <tr>
+                                <th>ช่างซ่อม</th>
                                 <th>ชื่อลูกค้า</th>
                                 <th>เบอร์โทรศัพท์</th>
                                 <th>อุปกรณ์</th>
@@ -148,6 +150,7 @@ function RepairStatusPage() {
                         <tbody>
                             {repairRecords.map((repairRecord: any) => (
                                 <tr key={repairRecord.id}>
+                                    <td>{repairRecord.engineer?.username ?? '-'}</td>
                                     <td>{repairRecord.customerName}</td>
                                     <td>{repairRecord.customerPhone}</td>
                                     <td>{repairRecord.deviceSerial}</td>

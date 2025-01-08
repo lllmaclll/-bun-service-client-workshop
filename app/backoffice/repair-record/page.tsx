@@ -6,7 +6,7 @@ import axios from 'axios'
 import { config } from '@/app/config'
 import Swal from 'sweetalert2'
 
-function RepairReacordPage() {
+function RepairRecordPage() {
     const [devices, setDevices] = useState([]);
     const [repairRecords, setRepairRecords] = useState([]);
 
@@ -21,6 +21,12 @@ function RepairReacordPage() {
     const [deviceId, setDeviceId] = useState('')
     const [expireDate, setExpireDate] = useState('');
     const [id, setId] = useState(0)
+
+    // receive machine
+    const [showModalReceive, setShowModalReceive] = useState(false)
+    const [receiveCustomerName, setReceiveCustomerName] = useState('')
+    const [receiveAmount, setReceiveAmount] = useState(0)
+    const [receiveId, setReceiveId] = useState(0)
 
     const fetchDevices = async () => {
         const response = await axios.get(`${config.apiUrl}/api/device/list`);
@@ -124,6 +130,29 @@ function RepairReacordPage() {
         setId(0)
     }
 
+    const handleShowModalReceive = (repairRecord: any) => {
+        setShowModalReceive(true)
+        setReceiveCustomerName(repairRecord.customerName)
+        setReceiveAmount(0)
+        setReceiveId(repairRecord.id)
+    }
+
+    const handleCloseModalReceive = () => {
+        setShowModalReceive(false)
+        setReceiveId(0)
+    }
+
+    const handleReceive = async () => {
+        const payload = {
+            id: receiveId,
+            amount: receiveAmount
+        }
+
+        await axios.put(`${config.apiUrl}/api/repair-record/receive`, payload)
+        fetchRepairRecords()
+        handleCloseModalReceive()
+    }
+
     const getStatusName = (status: string) => {
         switch (status) {
             case 'active':
@@ -168,7 +197,8 @@ function RepairReacordPage() {
                                 <th>วันที่รับซ่อม</th>
                                 <th>วันที่ซ่อมเสร็จ</th>
                                 <th>สถานะ</th>
-                                <th className='text-center' style={{ width: '220px' }}></th>
+                                <th className='text-right' style={{ paddingRight: '4px' }}>ค่าบริการ</th>
+                                <th className='text-center' style={{ width: '330px' }}></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -181,7 +211,12 @@ function RepairReacordPage() {
                                     <td>{dayjs(repairRecord.createdAt).format('DD/MM/YYYY')}</td>
                                     <td>{repairRecord.endJobDate ? dayjs(repairRecord.endJobDate).format('DD/MM/YYYY') : '-'}</td>
                                     <td>{getStatusName(repairRecord.status)}</td>
+                                    <td className='text-right'>{repairRecord.amount?.toLocaleString('th-TH')}</td>
                                     <td>
+                                        <button className='btn-edit' onClick={() => handleShowModalReceive(repairRecord)}>
+                                            <i className='fa-solid fa-check mr-3'></i>
+                                            <span>รับของ</span>
+                                        </button>
                                         <button className='btn-edit' onClick={() => handleEdit(repairRecord)}>
                                             <i className='fa-solid fa-edit mr-3'></i>
                                             <span>แก้ไข</span>
@@ -286,8 +321,30 @@ function RepairReacordPage() {
                     <span>บันทึก</span>
                 </button>
             </Modal>
+
+            {/* receive machine */}
+            <Modal title="รับของ" isOpen={showModalReceive} onClose={() => handleCloseModalReceive()} size='xl'>
+                <div className="flex gap-4">
+                    <div className="w-1/2">
+                        <div>ชื่อลูกค้า</div>
+                        <input type="text" className="form-control w-full" value={receiveCustomerName} readOnly />
+                    </div>
+
+                    <div className="w-1/2">
+                        <div>ค่าบริการ</div>
+                        <input type="text" className="form-control w-full text-right" value={receiveAmount} onChange={(e) => setReceiveAmount(Number(e.target.value))} />
+                    </div>
+                </div>
+
+                <div>
+                    <button className="btn-primary mt-4" onClick={handleReceive}>
+                        <i className="fa-solid fa-check mr-3"></i>
+                        <span>บันทึก</span>
+                    </button>
+                </div>
+            </Modal>
         </>
     )
 }
 
-export default RepairReacordPage
+export default RepairRecordPage
