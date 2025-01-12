@@ -3,21 +3,40 @@ import { config } from '@/app/config'
 import axios from 'axios'
 import React, { useEffect, useState } from 'react'
 import Chart from 'apexcharts'
+import dayjs from 'dayjs'
 
 function DashboardPage() {
   const [totalRepairRecords, setTotalRepairRecords] = useState(0)
   const [totalRepairRecordNotComplete, setTotalRepairRecordNotComplete] = useState(0)
   const [totalRepairRecordComplete, setTotalRepairRecordComplete] = useState(0)
   const [totalAmount, setTotalAmount] = useState(0)
+  const [listYears, setListYears] = useState<number[]>([])
+  const [listMonths, setListMonths] = useState(['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'])
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
+  const [selectedYearChartIncomePerMonth, setSelectedYearChartIncomePerMonth] = useState(new Date().getFullYear())
 
   const fetchData = async () => {
-    const response = await axios.get(`${config.apiUrl}/api/repair-record/dashboard`)
+    const params = {
+      year: selectedYear,
+      month: selectedMonth + 1
+    }
+
+    const response = await axios.get(`${config.apiUrl}/api/repair-record/dashboard`, {
+      params: params
+    })
+
     setTotalRepairRecords(response.data.totalRepairRecords)
     setTotalRepairRecordNotComplete(response.data.totalRepairRecordNotComplete)
     setTotalRepairRecordComplete(response.data.totalRepairRecordComplete)
     setTotalAmount(response.data.totalAmount)
 
-    renderChartIncomePerDays()
+    let listIncomePerDays = []
+    for (let i = 0; i < response.data.listIncomePerDays.length; i++) {
+      listIncomePerDays.push(response.data.listIncomePerDays[i].amount)
+    }
+
+    renderChartIncomePerDays(listIncomePerDays)
     renderChartIncomePerMonth()
     renderChartPie(
       response.data.totalRepairRecordComplete,
@@ -26,9 +45,9 @@ function DashboardPage() {
     )
   }
 
-  const renderChartIncomePerDays = () => {
+  const renderChartIncomePerDays = (data: number[]) => {
     // radom data 31 days
-    const data = Array.from({ length: 31 }, () => Math.floor(Math.random() * 10000))
+    // const data = Array.from({ length: 31 }, () => Math.floor(Math.random() * 10000))
 
     const options = {
       chart: {
@@ -67,7 +86,7 @@ function DashboardPage() {
         }
       ],
       xaxis: {
-        categories: [ 'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม' ]
+        categories: ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม']
       }
     }
 
@@ -94,6 +113,15 @@ function DashboardPage() {
   }
 
   useEffect(() => {
+    // year 5 years ago to now
+    const currentYear = dayjs().year()
+    const currentMonth = dayjs().month()
+    const listYear = Array.from({ length: 5 }, (_, i) => currentYear - i)
+    setListYears(listYear)
+    setSelectedYear(currentYear)
+    setSelectedMonth(currentMonth)
+    setSelectedYearChartIncomePerMonth(currentYear)
+
     fetchData()
   }, [])
 
@@ -120,15 +148,52 @@ function DashboardPage() {
       </div>
 
       <div className='text-2xl font-bold mt-5 mb-2'>รายได้รายวัน</div>
+      <div className='flex mb-3 mt-2 gap-4 items-end'>
+        <div className="w-[100px]">
+          <div>ปี</div>
+          <select className='form-control' onChange={(e) => setSelectedYear(parseInt(e.target.value))}>
+            {listYears.map((year, index) => (
+              <option value={year} key={index}>{year}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="w-[100px]">
+          <div>เดือน</div>
+          <select className='form-control' onChange={(e) => setSelectedMonth(parseInt(e.target.value))}>
+            {listMonths.map((month, index) => (
+              <option value={month} key={index}>{month}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className='w-[200px] ms-2'>
+          <button className='btn' style={{ paddingRight: '20px', paddingLeft: '10px'}} onClick={fetchData}>
+            <i className='fa-solid fa-magnifying-glass ms-3 pe-3'></i>
+            <span>แสดงข้อมูล</span>
+          </button>
+        </div>
+
+      </div>
       <div id='chartIncomePerDays'></div>
+
+      <div className='text-2xl font-bold mt-5 mb-2'>รายได้รายเดือน</div>
+      <select className='form-control mb-2 mt-2' onChange={(e) => setSelectedYear(parseInt(e.target.value))}>
+        {listYears.map((year, index) => (
+          <option value={year} key={index}>{year}</option>
+        ))}
+      </select>
+      <button className='btn ms-2' style={{ paddingRight: '20px', paddingLeft: '10px'}} onClick={fetchData}>
+        <i className='fa-solid fa-magnifying-glass ms-3 pe-3'></i>
+        <span>แสดงข้อมูล</span>
+      </button>
 
       <div className='flex gap-4'>
         <div className='w-2/3'>
-          <div className='text-2xl font-bold mt-5 mb-2'>รายได้รายเดือน</div>
           <div id='chartIncomePerMonth'></div>
         </div>
+
         <div className='w-1/3'>
-          <div className='text-2xl font-bold mt-5 mb-2'>งานทั้งหมด</div>
           <div id='chartPie'></div>
         </div>
       </div>
