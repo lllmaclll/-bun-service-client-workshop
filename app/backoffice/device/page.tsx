@@ -16,10 +16,29 @@ function DevicePage() {
     const [remark, setRemark] = useState('')
     const [id, setId] = useState(0)
 
+    // pagination
+    const [page, setPage] = useState(1)
+    const [pageSize, setPageSize] = useState(2)
+    const [totalPage, setTotalPage] = useState(0)
+    const [totalPageList, setTotalPageList] = useState<number[]>([])
+
     const fetchData = async () => {
         try {
-            const response = await axios.get(`${config.apiUrl}/api/device/list`)
-            setDevices(response.data)
+            const params = {
+                page: page,
+                pageSize: pageSize
+            }
+            const response = await axios.get(`${config.apiUrl}/api/device/list`, { params })
+            setDevices(response.data.results)
+
+            if (totalPage === 0) {
+                setTotalPage(response.data.totalPage)
+
+                for (let i = 1; i <= response.data.totalPage; i++) {
+                    totalPageList.push(i)
+                }
+            }
+
         } catch (error: any) {
             Swal.fire({
                 icon: 'error',
@@ -100,6 +119,25 @@ function DevicePage() {
         }
     }
 
+    const handlePreviousPage = () => {
+        if (page > 1) {
+            setPage(page - 1)
+            fetchData()
+        }
+    }
+
+    const handleNextPage = () => {
+        if (page < totalPage) {
+            setPage(page + 1)
+            fetchData()
+        }
+    }
+
+    const handleChangePage = (page: number) => {
+        setPage(page)
+        fetchData()
+    }
+
     useEffect(() => {
         fetchData()
     }, [])
@@ -144,6 +182,29 @@ function DevicePage() {
                     ))}
                 </tbody>
             </table>
+
+            {/* pagination */}
+            <div className="mt-3">
+                <button className="btn btn-edit" onClick={handlePreviousPage}>
+                    <i className="fa-solid fa-arrow-left"></i>
+                </button>
+                {totalPageList.map((item: any, index) => (
+                    page === parseInt(item) ? (
+                        <button key={index} className="btn btn-edit border-solid border-2 border-sky-500 mr-1 ml-1">
+                            {item}
+                        </button>
+                    ) : (
+                        <button key={index} className="btn btn-edit mr-1 ml-1" onClick={() => handleChangePage(item)}>
+                            {item}
+                        </button>
+                    )
+
+                ))}
+                <button className="btn btn-edit" onClick={handleNextPage}>
+                    <i className="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+
         </div>
 
         <Modal 

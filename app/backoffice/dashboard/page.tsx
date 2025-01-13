@@ -4,6 +4,7 @@ import axios from 'axios'
 import React, { useEffect, useState } from 'react'
 import Chart from 'apexcharts'
 import dayjs from 'dayjs'
+import Swal from 'sweetalert2'
 
 function DashboardPage() {
   const [totalRepairRecords, setTotalRepairRecords] = useState(0)
@@ -15,34 +16,74 @@ function DashboardPage() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
   const [selectedYearChartIncomePerMonth, setSelectedYearChartIncomePerMonth] = useState(new Date().getFullYear())
+  const [listIncomePerMonth, setListIncomePerMonth] = useState([])
 
   const fetchData = async () => {
-    const params = {
-      year: selectedYear,
-      month: selectedMonth + 1
+    fetchDataIncomePerDay()
+    fetchDataChartIncomePerMonth()
+  }
+
+  const fetchDataIncomePerDay = async () => {
+    try {
+      const params = {
+        year: selectedYear,
+        month: selectedMonth + 1
+      }
+  
+      const response = await axios.get(`${config.apiUrl}/api/repair-record/dashboard`, {
+        params: params
+      })
+  
+      setTotalRepairRecords(response.data.totalRepairRecords)
+      setTotalRepairRecordNotComplete(response.data.totalRepairRecordNotComplete)
+      setTotalRepairRecordComplete(response.data.totalRepairRecordComplete)
+      setTotalAmount(response.data.totalAmount)
+  
+      let listIncomePerDays = []
+      for (let i = 0; i < response.data.listIncomePerDays.length; i++) {
+        listIncomePerDays.push(response.data.listIncomePerDays[i].amount)
+      }
+  
+      renderChartIncomePerDays(listIncomePerDays)
+      renderChartPie(
+        response.data.totalRepairRecordComplete,
+        response.data.totalRepairRecordNotComplete,
+        response.data.totalRepairRecords
+      )
+    } catch (error: any) {
+      Swal.fire({
+        icon: 'error',
+        title: 'การดึงข้อมูลล้มเหลว',
+        text: error.message
+      })
     }
+  }
 
-    const response = await axios.get(`${config.apiUrl}/api/repair-record/dashboard`, {
-      params: params
-    })
+  const fetchDataChartIncomePerMonth = async () => {
+    try {
+      const params = {
+        year: selectedYearChartIncomePerMonth
+      }
 
-    setTotalRepairRecords(response.data.totalRepairRecords)
-    setTotalRepairRecordNotComplete(response.data.totalRepairRecordNotComplete)
-    setTotalRepairRecordComplete(response.data.totalRepairRecordComplete)
-    setTotalAmount(response.data.totalAmount)
+      const response = await axios.get(`${config.apiUrl}/api/repair-record/income-per-month`, {
+        params: params
+      })
 
-    let listIncomePerDays = []
-    for (let i = 0; i < response.data.listIncomePerDays.length; i++) {
-      listIncomePerDays.push(response.data.listIncomePerDays[i].amount)
+      let listIncomePerMonth = []
+
+      for (let i = 0; i < response.data.length; i++) {
+        let item = response.data[i].amount
+        listIncomePerMonth.push(item)
+      }
+
+      renderChartIncomePerMonth(listIncomePerMonth)
+    } catch (error: any) {
+      Swal.fire({
+        icon: 'error',
+        title: 'การดึงข้อมูลล้มเหลว',
+        text: error.message
+      })
     }
-
-    renderChartIncomePerDays(listIncomePerDays)
-    renderChartIncomePerMonth()
-    renderChartPie(
-      response.data.totalRepairRecordComplete,
-      response.data.totalRepairRecordNotComplete,
-      response.data.totalRepairRecords
-    )
   }
 
   const renderChartIncomePerDays = (data: number[]) => {
@@ -66,13 +107,17 @@ function DashboardPage() {
     }
 
     const chartIncomePerDays = document.getElementById('chartIncomePerDays')
-    const chart = new Chart(chartIncomePerDays, options)
-    chart.render()
+
+    if (chartIncomePerDays) {
+      const chart = new Chart(chartIncomePerDays, options)
+      chart.render()
+    }
+
   }
 
-  const renderChartIncomePerMonth = () => {
+  const renderChartIncomePerMonth = (data: number[]) => {
     // radom data 12 month
-    const data = Array.from({ length: 12 }, () => Math.floor(Math.random() * 10000))
+    // const data = Array.from({ length: 12 }, () => Math.floor(Math.random() * 10000))
 
     const options = {
       chart: {
@@ -91,8 +136,12 @@ function DashboardPage() {
     }
 
     const chartIncomePerMonth = document.getElementById('chartIncomePerMonth')
-    const chart = new Chart(chartIncomePerMonth, options)
-    chart.render()
+
+    if (chartIncomePerMonth) {
+      const chart = new Chart(chartIncomePerMonth, options)
+      chart.render()
+    }
+
   }
 
   const renderChartPie = (totalRepairRecordComplete: number, totalRepairRecordNotComplete: number, totalRepairRecords: number) => {
@@ -168,7 +217,7 @@ function DashboardPage() {
         </div>
 
         <div className='w-[200px] ms-2'>
-          <button className='btn' style={{ paddingRight: '20px', paddingLeft: '10px'}} onClick={fetchData}>
+          <button className='btn' style={{ paddingRight: '20px', paddingLeft: '10px'}} onClick={fetchDataIncomePerDay}>
             <i className='fa-solid fa-magnifying-glass ms-3 pe-3'></i>
             <span>แสดงข้อมูล</span>
           </button>
@@ -183,7 +232,7 @@ function DashboardPage() {
           <option value={year} key={index}>{year}</option>
         ))}
       </select>
-      <button className='btn ms-2' style={{ paddingRight: '20px', paddingLeft: '10px'}} onClick={fetchData}>
+      <button className='btn ms-2' style={{ paddingRight: '20px', paddingLeft: '10px'}} onClick={fetchDataChartIncomePerMonth}>
         <i className='fa-solid fa-magnifying-glass ms-3 pe-3'></i>
         <span>แสดงข้อมูล</span>
       </button>
